@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clickaroo</title>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background-image: url('https://www.wallpaperflare.com/static/29/908/941/the-offspring-symbol-graphics-name-wallpaper-preview.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        #title, #score, #instructions, #winning-message {
+            user-select: none; /* Make text unselectable */
+        }
+        #title {
+            text-align: center;
+            font-size: 2em;
+            margin-top: 20px;
+            color: white;
+        }
+        #score {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 1.5em;
+            color: white;
+        }
+        #start-button {
+            position: absolute;
+            top: 50%;
+            left: 10px;
+            transform: translateY(-50%);
+            padding: 10px 20px;
+            font-size: 1.5em;
+            cursor: pointer;
+        }
+        #mute-button, #restart-button {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            padding: 10px 20px;
+            font-size: 1.5em;
+            cursor: pointer;
+            display: none;
+        }
+        #restart-button {
+            right: 150px;
+        }
+        #instructions {
+            position: absolute;
+            top: 60%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.2em;
+            color: white;
+            text-align: center;
+        }
+        #winning-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2em;
+            color: white;
+            display: none;
+        }
+        .ball {
+            position: absolute;
+            width: 70px; /* Increased size for easier clicking */
+            height: 70px; /* Increased size for easier clicking */
+            border-radius: 50%;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="title">Clickaroo</div>
+    <div id="score">Score: 0</div>
+    <button id="start-button">Start Game</button>
+    <button id="mute-button">Mute</button>
+    <button id="restart-button">Restart Game</button>
+    <div id="instructions">Click the balls to make them disappear and increase your score!</div>
+    <div id="winning-message">You Win! Click to go to the next level.</div>
+    <audio id="background-music" src="https://cdn.pixabay.com/audio/2025/01/13/audio_0b71b862d0.mp3" loop></audio>
+    <script>
+        let score = 0;
+        let level = 1;
+        const scoreElement = document.getElementById('score');
+        const startButton = document.getElementById('start-button');
+        const muteButton = document.getElementById('mute-button');
+        const restartButton = document.getElementById('restart-button');
+        const instructions = document.getElementById('instructions');
+        const winningMessage = document.getElementById('winning-message');
+        const audio = document.getElementById('background-music');
+        const ballColors = ['blue', 'green', 'yellow', 'purple', 'red', 'orange', 'pink', 'cyan', 'magenta', 'lime', 'teal', 'navy', 'maroon', 'olive', 'silver'];
+        let balls = [];
+        const ballSize = 70; // Updated size to match the increased clickable area
+
+        function createBall(index) {
+            const ball = document.createElement('div');
+            ball.classList.add('ball');
+            ball.style.backgroundColor = ballColors[index % ballColors.length];
+            ball.style.left = `${Math.random() * (window.innerWidth - ballSize)}px`;
+            ball.style.top = `${Math.random() * (window.innerHeight - ballSize)}px`;
+            document.body.appendChild(ball);
+            return {
+                element: ball,
+                posX: parseFloat(ball.style.left),
+                posY: parseFloat(ball.style.top),
+                velocityX: (Math.random() * 2 + 1) * 0.75,
+                velocityY: (Math.random() * 2 + 1) * 0.75
+            };
+        }
+
+        function startLevel() {
+            score = 0;
+            scoreElement.textContent = `Score: ${score}`;
+            balls = [];
+            for (let i = 0; i < level; i++) {
+                balls.push(createBall(i));
+            }
+            balls.forEach(ball => {
+                ball.element.addEventListener('click', () => {
+                    ball.element.style.display = 'none';
+                    score++;
+                    scoreElement.textContent = `Score: ${score}`;
+                    if (score === balls.length) {
+                        winningMessage.style.display = 'block';
+                        audio.pause();
+                        winningMessage.addEventListener('click', nextLevel);
+                    }
+                });
+            });
+            audio.currentTime = 0;
+            audio.play();
+            update();
+        }
+
+        function nextLevel() {
+            level++;
+            winningMessage.style.display = 'none';
+            winningMessage.removeEventListener('click', nextLevel);
+            startLevel();
+        }
+
+        startButton.addEventListener('click', () => {
+            audio.play().catch(error => {
+                console.log('Audio playback failed:', error);
+            });
+            startButton.style.display = 'none';
+            instructions.style.display = 'none';
+            muteButton.style.display = 'block';
+            restartButton.style.display = 'block';
+            startLevel();
+        });
+
+        muteButton.addEventListener('click', () => {
+            if (audio.muted) {
+                audio.muted = false;
+                muteButton.textContent = 'Mute';
+            } else {
+                audio.muted = true;
+                muteButton.textContent = 'Unmute';
+            }
+        });
+
+        restartButton.addEventListener('click', () => {
+            location.reload();
+        });
+
+        function update() {
+            balls.forEach(ball => {
+                ball.posX += ball.velocityX;
+                ball.posY += ball.velocityY;
+
+                if (ball.posX + ballSize > window.innerWidth || ball.posX < 0) {
+                    ball.velocityX = -ball.velocityX;
+                }
+                if (ball.posY + ballSize > window.innerHeight || ball.posY < 0) {
+                    ball.velocityY = -ball.velocityY;
+                }
+
+                ball.element.style.left = ball.posX + 'px';
+                ball.element.style.top = ball.posY + 'px';
+            });
+
+            requestAnimationFrame(update);
+        }
+    </script>
+</body>
+</html>
