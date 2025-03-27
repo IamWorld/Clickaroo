@@ -1,16 +1,16 @@
 # Clickaroo
 Game created with help of github copilot as an example for Endava's copilot workshop
 
-#Prompt used example:
+# Prompt used example:
 
-##First ExampleL
+## First example:
 Input: Create a hangman game in HTML (why is a bad example for prompting?)
 
-##Second example:
+## Second example:
 
 Input: You are a programmer , Create a snake game in HTML that show images and sounds and has standard buttons for a game
 
-##Third example:
+## Third example:
 
 a-	Pre - prompt: you are and expert programmer in HTML , JS and its frameworks, that focus on developing games that are fun, creative and have a great UI/UX impact
 b-	We will create a game but will start with some functionalities and testing and then will group everything.
